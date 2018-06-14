@@ -19,8 +19,8 @@ class ExportBMP: CliktCommand(name="pic") {
 
     //val includeMissing by option("-m", "--missing", help="Generate missing glyphs").file()
     val inputFile by option("-i", "--input", help="The input .hex file. Default is `unifont.hex`").file()
-    val outputFile by argument("<output>", help="The output image. The format is inferred from the extension. " +
-            "Default is `unifont.png`").file().optional()
+    val outputFile by option("-o", "--output", help="The output image. The format is inferred from the extension. " +
+            "Default is `unifont.png`").file()
 
     val border = 32
     val imageSize = 16*256 + border
