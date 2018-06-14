@@ -8,7 +8,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath(kotlinModule("gradle-plugin", kotlin_version))
+        classpath(kotlin(module="gradle-plugin", version=kotlin_version))
     }
 }
 
@@ -38,6 +38,8 @@ repositories {
 dependencies {
     compile(kotlin(module="stdlib-jdk8", version=kotlin_version))
     compile("com.github.ajalt", "clikt", "1.2.0")
+    compile("commons-net", "commons-net", "3.6")
+    compile("org.rauschig", "jarchivelib", "0.7.1")
     testCompile("junit", "junit", "4.12")
 }
 
