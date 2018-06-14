@@ -67,8 +67,8 @@ class ExportBMP: CliktCommand(name="pic") {
 
             val hex = "%02x".format(i).map { it.toString().toInt(16) }
 
-            g.drawImage(CommonImages.digits[hex[0]], x-1, y+4, null)
-            g.drawImage(CommonImages.digits[hex[1]], x+6, y+4, null)
+            g.drawImage(CommonImages.digits[hex[0]], x, y+4, null)
+            g.drawImage(CommonImages.digits[hex[1]], x+7, y+4, null)
             if(i and 0xf == 0xf)
                 g.drawLine(x-16, y+15, x+14, y+15)
             else
