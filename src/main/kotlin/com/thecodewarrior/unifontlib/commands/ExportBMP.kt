@@ -1,18 +1,14 @@
 package com.thecodewarrior.unifontlib.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
-import com.thecodewarrior.unifontlib.CommonImages
+import com.thecodewarrior.unifontlib.Images
 import com.thecodewarrior.unifontlib.GlyphList
-import com.thecodewarrior.unifontlib.Unifont
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.image.BufferedImage
 import java.io.File
-import java.nio.file.Paths
 import javax.imageio.ImageIO
 
 class ExportBMP: CliktCommand(name="pic") {
@@ -35,26 +31,27 @@ class ExportBMP: CliktCommand(name="pic") {
         val g = image.graphics
         g.color = Color.WHITE
         g.fillRect(0, 0, image.width, image.height)
-        addEdges(g)
+        addRulers(g)
         addGlyphs(g, glyphList)
         g.dispose()
 
         ImageIO.write(image, outputFile.extension, outputFile)
     }
 
-    private fun addEdges(g: Graphics) {
+    private fun addRulers(g: Graphics) {
         g.color = Color.BLACK
-        g.drawLine(0, border-2, imageSize-1, border-2)
-        g.drawLine(border-2, 0, border-2, imageSize-1)
+        g.drawLine(border-2, border-2, imageSize-1, border-2)
+        g.drawLine(border-2, border-2, border-2, imageSize-1)
+        g.drawLine(0, border-1, border-2, border-1)
+        g.drawLine(border-1, 0, border-1, border-2)
 
         for(i in 0 until 256) {
             val x = border + i*16
             val y = border - 16
 
-            val hex = "%02x".format(i).map { it.toString().toInt(16) }
+            val hex = "%02X".format(i)
 
-            g.drawImage(CommonImages.digits[hex[0]], x+1, y+2, null)
-            g.drawImage(CommonImages.digits[hex[1]], x+8, y+2, null)
+            Images.drawText(g, x, y-1, hex, tracking = -1)
             if(i and 0xf == 0xf)
                 g.drawLine(x+15, y-16, x+15, y+14)
             else
@@ -65,10 +62,9 @@ class ExportBMP: CliktCommand(name="pic") {
             val x = border - 16
             val y = border + i*16
 
-            val hex = "%02x".format(i).map { it.toString().toInt(16) }
+            val hex = "%02X".format(i)
 
-            g.drawImage(CommonImages.digits[hex[0]], x, y+4, null)
-            g.drawImage(CommonImages.digits[hex[1]], x+7, y+4, null)
+            Images.drawText(g, x-2, y, hex)
             if(i and 0xf == 0xf)
                 g.drawLine(x-16, y+15, x+14, y+15)
             else

@@ -1,0 +1,71 @@
+~~ ~~ ~~ output hex:
+
+~ collect all glyphs from $(UNIFILES)
+~ > plane00/unifont-base.hex
+~ > plane00/wqy.hex
+~ > plane00/hangul-syllables.hex
+~ > plane00/spaces.hex
+~ > plane00/plane00-unassigned.hex
+~ > plane00/plane00-nonprinting.hex
+~ > plane00/custom00.hex
+~ write to out/unifont-$(VERSION).hex
+
+~ load glyphs from plane00/*.hex
+~ > plane00/copyleft.hex
+~ > plane00/hangul-syllables.hex
+~ > plane00/plane00-unassigned.hex
+~ > plane00/spaces.hex
+~ > plane00/wqy.hex
+~ > plane00/custom00.hex
+~ > plane00/omit.hex
+~ > plane00/plane00-nonprinting.hex
+~ > plane00/pua.hex
+~ > plane00/unifont-base.hex
+~ remove U+FFFE, U+FFFF, and U+01F12F
+~ add circles to combining characters in plane00/plane00-combining.txt and not in plane00/plane00-nonprinting.hex
+~ write to out/unifont_sample-$(VERSION).hex
+
+~ write glyphs from $(UPPER_FILES) to out/unifont_upper-$(VERSION).hex
+~ > plane01/noscript.hex
+~ > plane01/plane01-nonprinting.hex
+~ > plane01/plane01-unassigned.hex
+~ > plane01/plane01.hex
+~ > plane01/space.hex
+~ > plane0E/plane0E-nonprinting.hex
+~ > plane0E/plane0E.hex
+
+~ write glyphs from plane01/plane01-combining.txt and plane0E/plane0E-combining.txt to out/upper_combining.txt
+
+~ write glyphs from plane01-nonprinting.hex and plane0E-nonprinting.hex to out/upper_nonprinting.hex
+
+	# Generate files in plane01/all directory to create font sample book.
+~ run from plane01/Makefile
+~~ generate glyphs for each codepoint or codepoint range in plane01/unassigned-ranges.txt
+~~ write to plane01/plane01-unassigned.hex
+~~ generate glyphs for each codepoint or codepoint range in plane01/noscript-ranges.txt
+~~ write to out/noscript.hex
+~~ write unique glyphs from plane01/*.hex to plane01/all/plane01-all.hex
+~ end snippet
+~ load glyphs from plane01/all/plane01-all.hex, plane0E/plane0E-nonprinting.hex, and plane0E/plane0E.hex
+~ remove codepoints ..FFFE and ..FFFF where . is any digit
+~ generate circles for glyphs in out/upper_combining.txt but not in out/upper_nonprinting.hex
+~ write glyphs to out/unifont_upper_sample-$(VERSION).hex
+
+	# Create a .hex file with CSUR glyphs, without combining circles
+~ write glyphs from out/unifont$(VERSION).hex and plane00csur/*.hex to out/unifont_csur_lower-$(VERSION).hex
+~ > plane00csur-spaces.hex
+~ > plane00csur.hex
+~ > space.hex
+
+	# Create a .hex file with only CSUR glyphs from all planes
+~ write glyphs from plane00csur/*.hex and plane0F/plane0Fcsur.hex to out/unifont_csur-$(VERSION).hex
+~ > plane00csur/plane00csur-spaces.hex
+~ > plane00csur/plane00csur.hex
+~ > plane00csur/space.hex
+
+	# Create a .hex file with all CSUR glyphs, with combining circles
+~ write combined contents of plane00csur/plane00csur-combining.txt and plane0Fcsur/plane0Fcsur-combining.txt to out/csur_combining.txt
+
+~ read out/unifont_csur-$(VERSION).hex
+~ generate circles for characters in out/csur_combining.txt and not in plane00/plane00-nonprinting.hex
+~ write to out/unifont_csur_sample-$(VERSION).hex
