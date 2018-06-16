@@ -39,3 +39,7 @@ operator fun IntRange.minus(other: IntRange): List<IntRange> {
         )
     return listOf(this)
 }
+
+fun byteArrayOf(vararg ints: Int): ByteArray {
+    return ints.map { it.toByte() }.toByteArray()
+}

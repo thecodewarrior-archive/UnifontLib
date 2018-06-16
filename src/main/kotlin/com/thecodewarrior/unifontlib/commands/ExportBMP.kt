@@ -40,10 +40,10 @@ class ExportBMP: CliktCommand(name="pic") {
 
     private fun addRulers(g: Graphics) {
         g.color = Color.BLACK
-        g.drawLine(border-2, border-2, imageSize-1, border-2)
-        g.drawLine(border-2, border-2, border-2, imageSize-1)
         g.drawLine(0, border-1, border-2, border-1)
+        g.drawLine(border-2, border-2, imageSize-1, border-2)
         g.drawLine(border-1, 0, border-1, border-2)
+        g.drawLine(border-2, border-2, border-2, imageSize-1)
 
         for(i in 0 until 256) {
             val x = border + i*16
@@ -88,5 +88,6 @@ class ExportBMP: CliktCommand(name="pic") {
             g.drawImage(glyph.image, x, y, null)
             count++
         }
+        println()
     }
 }

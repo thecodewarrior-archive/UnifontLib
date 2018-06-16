@@ -12,7 +12,7 @@ import com.github.ajalt.clikt.output.TermUi
 
 class UnifontCommand: CliktCommand() {
     init {
-        subcommands(ExportBMP(), Download())
+        subcommands(ExportBMP(), Download(), Guides())
     }
 
     override fun run() = Unit
