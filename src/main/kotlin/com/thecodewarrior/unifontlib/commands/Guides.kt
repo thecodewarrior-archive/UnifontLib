@@ -9,13 +9,14 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
+import com.thecodewarrior.unifontlib.GlyphList
 import com.thecodewarrior.unifontlib.Images
-import com.thecodewarrior.unifontlib.utils.byteArrayOf
-import com.thecodewarrior.unifontlib.utils.vec
+import com.thecodewarrior.unifontlib.utils.*
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.image.BufferedImage
 import java.awt.image.IndexColorModel
+import java.io.File
 import java.nio.ByteBuffer
 import javax.imageio.ImageIO
 
@@ -60,14 +61,18 @@ class ExportGuides: CliktCommand(
                 )
         )
 
+        val inputFile = hex ?: File("unifont.hex")
+        val glyphs = GlyphList()
+        glyphs.read(inputFile.toPath())
+
         val g = image.graphics
         g.color = Color.WHITE
         g.drawRect(0, 0, image.width, image.height)
 
         drawMetadata(g)
         drawAxes(g)
-//        drawGuides(g)
-//        draw
+        drawGuides(g)
+        drawGlyphs(image, glyphs)
 
         g.dispose()
 
@@ -97,9 +102,75 @@ class ExportGuides: CliktCommand(
 
     private fun drawAxes(g: Graphics) {
         val prefixText = "U+%04X\u00FE\u00FE".format(prefix)
-        Images.drawText(g, 7, 15, prefixText)
-        // y = upper unless flipped
-        // x = lower unless flipped
+        Images.drawText(g, 8, 15, prefixText)
+
+        for(i in 0..15) { // vertical axis
+            val text =
+                    if(this.flip)
+                        "\u00FE%X".format(i) // x0 - xF
+                    else
+                        "%X\u00FE".format(i) // 0x - Fx
+            var y = Guides.gridStart.yi + Guides.gridSize.yi/2 - 8
+            val x = Guides.gridStart.xi - 3 - 16
+            y += (Guides.gridSize.xi-1) * i
+            Images.drawText(g, x, y, text)
+        }
+
+        for(i in 0..15) { // horizontal axis
+            val text =
+                    if(this.flip)
+                        "%X\u00FE".format(i) // 0x - Fx
+                    else
+                        "\u00FE%X".format(i) // x0 - xF
+            val y = Guides.gridStart.yi - 2 - 16
+            var x = Guides.gridStart.xi + Guides.gridSize.xi/2 - 8
+            x += (Guides.gridSize.xi-1) * i
+            Images.drawText(g, x, y, text)
+        }
+    }
+
+    private fun drawGuides(g: Graphics) {
+        val guide = Images["glyph_guide_box"]
+
+        for(xIndex in 0 until 16) {
+            for(yIndex in 0 until 16) {
+                val pos = Guides.gridStart + (Guides.gridSize - vec(1, 1)) * vec(xIndex, yIndex)
+                g.drawImage(guide, pos.xi, pos.yi, null)
+            }
+        }
+    }
+
+    private fun drawGlyphs(image: BufferedImage, glyphs: GlyphList) {
+        for(xIndex in 0 until 16) {
+            for(yIndex in 0 until 16) {
+                val codepoint = (prefix shl 8) or if(flip)
+                    xIndex shl 4 or yIndex
+                else
+                    yIndex shl 4 or xIndex
+                val glyph = glyphs.glyphs[codepoint] ?: continue
+                val gridPos = Guides.gridStart + (Guides.gridSize - vec(1, 1)) * vec(xIndex, yIndex)
+                val glyphX = when(glyph.image.width) {
+                    8, 16, 24 -> 8
+                    32 -> 0
+                    else -> 0
+                }
+                val glyphY = when(glyph.image.height) {
+                    8, 16 -> 8
+                    24, 32 -> 0
+                    else -> 0
+                }
+
+                val drawX = gridPos.xi + 1 + glyphX
+                val drawY = gridPos.yi + 1 + glyphY
+                for(x in 0 until glyph.image.width) {
+                    for(y in 0 until glyph.image.height) {
+                        if(glyph.image.getRGB(x, y) and 0xFFFFFF == 0x000000) {
+                            image.setRGB(drawX + x, drawY + y, 0x000000)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
