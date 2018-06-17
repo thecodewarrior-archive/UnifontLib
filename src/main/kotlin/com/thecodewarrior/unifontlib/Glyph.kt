@@ -1,25 +1,31 @@
 package com.thecodewarrior.unifontlib
 
+import com.thecodewarrior.unifontlib.commands.IndexColorModel
 import com.thecodewarrior.unifontlib.utils.Tokenizer
+import com.thecodewarrior.unifontlib.utils.isColor
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.image.BufferedImage
 import java.lang.Math.floor
 
-class Glyph(val codepoint: Int, val width: Int, val height: Int) {
+class Glyph(val codepoint: Int, val image: BufferedImage) {
+    constructor(codepoint: Int, width: Int, height: Int): this(codepoint,
+            BufferedImage(width, height, BufferedImage.TYPE_BYTE_BINARY, COLOR_MODEL))
+
+    val width = image.width
+    val height = image.height
+
     init {
         if(width % 4 != 0)
             throw IllegalArgumentException("Glyph width not a multiple of 4, it cannot be expressed in hex")
     }
-
-    val image = BufferedImage(width, height, BufferedImage.TYPE_BYTE_BINARY)
 
     fun writeToHex(): String {
         val glyphHex = (0 until height).map { y ->
             var row = 0L
             for(x in 0 until width) {
                 val mask = 1L shl (width-1-x)
-                val pixelSet = (image.getRGB(x, y) and 0xFFFFFF) == 0x000000
+                val pixelSet = image.isColor(x, y, Color.BLACK)
                 if(pixelSet) {
                     row = row or mask
                 }
@@ -40,6 +46,8 @@ class Glyph(val codepoint: Int, val width: Int, val height: Int) {
     }
 
     companion object {
+        val COLOR_MODEL = IndexColorModel(Color(1f, 1f, 1f, 0f), Color.BLACK)
+
         fun readFromHex(line: String): Glyph {
             val tokenizer = Tokenizer(line)
             val codepoint = tokenizer.until(':').toInt(16)
@@ -57,7 +65,7 @@ class Glyph(val codepoint: Int, val width: Int, val height: Int) {
                 for (y in 0 until height) {
                     val mask = 1L shl (width-1-x)
                     val pixelSet = rows[y] and mask != 0L
-                    glyph.image.setRGB(x, y, if(pixelSet) 0x000000 else 0xFFFFFF)
+                    glyph.image.setRGB(x, y, if(pixelSet) Color.BLACK.rgb else Color(1f, 1f, 1f, 0f).rgb)
                 }
             }
 
@@ -70,8 +78,6 @@ class Glyph(val codepoint: Int, val width: Int, val height: Int) {
             val hexDigits = "%06X".format(codepoint).removePrefix("00")
 
             val g = glyph.image.graphics
-            g.color = Color.WHITE
-            g.fillRect(0, 0, 16, 16)
             when(hexDigits.length) {
                 4 -> {
                     g.color = Color.BLACK
@@ -94,8 +100,6 @@ class Glyph(val codepoint: Int, val width: Int, val height: Int) {
 
         private fun drawErrorGlyph(g: Graphics, error: Int) {
             val hexDigits = "%04X".format(error)
-            g.color = Color.WHITE
-            g.fillRect(0, 0, 16, 16)
             g.drawImage(Images["error_base"], 0, 0, null)
 
             Images.drawMiniChar(g,  1, 1, hexDigits[0])

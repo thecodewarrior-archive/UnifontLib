@@ -1,5 +1,7 @@
 package com.thecodewarrior.unifontlib.utils
 
+import java.awt.Color
+import java.awt.image.BufferedImage
 import kotlin.math.min
 
 private object Utils
@@ -42,4 +44,14 @@ operator fun IntRange.minus(other: IntRange): List<IntRange> {
 
 fun byteArrayOf(vararg ints: Int): ByteArray {
     return ints.map { it.toByte() }.toByteArray()
+}
+
+fun BufferedImage.isColor(x: Int, y: Int, color: Color): Boolean {
+    return this.getRGB(x, y) == color.rgb
+}
+
+fun BufferedImage.isColor(startX: Int, startY: Int, width: Int, height: Int, color: Color): Boolean {
+    val array = IntArray(width*height)
+    this.getRGB(startX, startY, width, height, array, 0, width)
+    return array.all { it == color.rgb }
 }

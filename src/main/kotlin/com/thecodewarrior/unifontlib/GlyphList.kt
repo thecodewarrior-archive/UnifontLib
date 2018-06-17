@@ -4,7 +4,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 class GlyphList {
-    val glyphs = mutableMapOf<Int, Glyph>()
+    val glyphs = mutableMapOf<Int, Glyph>().toSortedMap()
 
     /**
      * Reads the .hex file at [path] and replaces [glyphs] with its decoded content
