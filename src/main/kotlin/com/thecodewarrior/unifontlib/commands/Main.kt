@@ -20,3 +20,18 @@ class UnifontCommand: CliktCommand() {
 
 fun main(args: Array<String>) = UnifontCommand().main(args)
 
+// for debugging in IDEA. Instead of constantly editing the run configuration, read arguments from stdin
+internal object IDEAMain {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        while (true) {
+            print("> ")
+            val line = readLine()?.trim() ?: break
+            if (line.equals("quit", ignoreCase = true))
+                break
+            val stdinArgs = ArgumentTokenizer.tokenize(line)
+            println()
+            UnifontCommand().main(stdinArgs)
+        }
+    }
+}
