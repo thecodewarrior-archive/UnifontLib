@@ -1,0 +1,14 @@
+<group>
+    <definerange name="ascii">
+        <range from="0000" to="007F"/>
+    </definerange>
+    <hex file="hexfile.hex">
+        <range named="ascii"/>
+        <range from="0200" to="03FF"/>
+        <not>
+            <range from="02A1" to="02A6"/>
+        </not>
+    </hex>
+    <combining file="thething-combining.txt"/>
+    <unassigned file="theplane-unassigned.txt"/>
+</group>

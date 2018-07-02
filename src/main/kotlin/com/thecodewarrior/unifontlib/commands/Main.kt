@@ -2,7 +2,7 @@ package com.thecodewarrior.unifontlib.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
-import com.github.ajalt.clikt.output.TermUi
+import java.nio.file.Paths
 
 //fun main(args: Array<String>) {
 //    val list = GlyphList()
@@ -12,10 +12,17 @@ import com.github.ajalt.clikt.output.TermUi
 
 class UnifontCommand: CliktCommand() {
     init {
-        subcommands(ExportBMP(), Download(), Guides())
+        subcommands(Test(), ExportBMP(), Download(), Guides(), HexmlRanges())
     }
 
     override fun run() = Unit
+}
+
+class Test: CliktCommand(name = "test") {
+    override fun run() {
+        val project = UnifontProject(Paths.get(".").toAbsolutePath())
+        project.loadPage(0)
+    }
 }
 
 fun main(args: Array<String>) = UnifontCommand().main(args)

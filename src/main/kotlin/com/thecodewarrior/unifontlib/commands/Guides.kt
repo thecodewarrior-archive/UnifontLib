@@ -13,9 +13,11 @@ import com.github.ajalt.clikt.parameters.types.int
 import com.thecodewarrior.unifontlib.Glyph
 import com.thecodewarrior.unifontlib.GlyphList
 import com.thecodewarrior.unifontlib.Images
+import com.thecodewarrior.unifontlib.Text
 import com.thecodewarrior.unifontlib.utils.*
 import java.awt.Color
 import java.awt.Graphics
+import java.awt.color.ColorSpace
 import java.awt.image.BufferedImage
 import java.awt.image.IndexColorModel
 import java.io.File
@@ -51,19 +53,17 @@ class ExportGuides: CliktCommand(
     val image by argument(name = "image", help = "The destination image file. Image type is inferred from extension.").file()
     val prefix by option("-p", "--prefix", help = "The codepoint prefix in hex. The output image will contain all the " +
             "codepoints from U+xxxx00 to U+xxxxFF.").hex().default(0)
-    val hex by option("-h", "--hex", help = "The the source .hex file").file().default(File("unifont.hex"))
-    val flip by option("-f", "--flip", help = "Flips the glyphs to go top to bottom, then left to right.")
+    val hex by option("-h", "--hex", help = "The the source .hex file. Defaults to unifont.hex").file().default(File("unifont.hex"))
+    val flip by option("-f", "--flip", help = "Flips the glyphs to go left to right, then top to bottom.")
             .flag("-F", "--unflip")
 
 
     override fun run() {
         val image = BufferedImage(604, 561, BufferedImage.TYPE_BYTE_BINARY,
-                IndexColorModel(2, 4, // white, black, red, cyan
-                        byteArrayOf(0xFF, 0x00, 0xFF, 0x00), //R
-                        byteArrayOf(0xFF, 0x00, 0x00, 0xFF), //G
-                        byteArrayOf(0xFF, 0x00, 0x00, 0xFF)  //B
-                )
+                IndexColorModel(Color(0xffffff), Color(0x000000), Color(0xffbfbf), Color(0xc0ffff))
         )
+
+        val c = Color(ColorSpace.getInstance(ColorSpace.CS_sRGB), floatArrayOf(1f, 1f, 1f), 0f)
 
         val glyphs = GlyphList()
         glyphs.read(hex.toPath())
@@ -94,42 +94,41 @@ class ExportGuides: CliktCommand(
         g.color = Color.BLACK
         g.fillRect(x-1, y-1, bits + 2, 3)
 
-        var mask = 1 shl bits
         for(i in 0 until bits) {
+            val mask = 1 shl (15-i)
             // off bit = white, on bit = black. Not the other way round because white is background, black is foreground
             val color = if(value and mask == 0) Color.WHITE else Color.BLACK
             g.drawPixel(x, y, color)
-            mask = mask shr 1
             x++
         }
     }
 
     private fun drawAxes(g: Graphics) {
-        val prefixText = "U+%04X\u00FE\u00FE".format(prefix)
-        Images.drawText(g, 8, 15, prefixText)
+        val prefixText = "U+%04X${Text.X_CROSS}${Text.X_CROSS}".format(prefix)
+        Text.drawText(g, 8, 15, prefixText)
 
         for(i in 0..15) { // vertical axis
             val text =
                     if(this.flip)
-                        "\u00FE%X".format(i) // x0 - xF
+                        "%X${Text.X_CROSS}".format(i) // 0x - Fx
                     else
-                        "%X\u00FE".format(i) // 0x - Fx
+                        "${Text.X_CROSS}%X".format(i) // x0 - xF
             var y = Guides.gridStart.yi + Guides.gridSize.yi/2 - 8
             val x = Guides.gridStart.xi - 3 - 16
             y += (Guides.gridSize.xi-1) * i
-            Images.drawText(g, x, y, text)
+            Text.drawText(g, x, y, text)
         }
 
         for(i in 0..15) { // horizontal axis
             val text =
                     if(this.flip)
-                        "%X\u00FE".format(i) // 0x - Fx
+                        "${Text.X_CROSS}%X".format(i) // x0 - xF
                     else
-                        "\u00FE%X".format(i) // x0 - xF
+                        "%X".format(i) // 0x - Fx
             val y = Guides.gridStart.yi - 2 - 16
             var x = Guides.gridStart.xi + Guides.gridSize.xi/2 - 8
             x += (Guides.gridSize.xi-1) * i
-            Images.drawText(g, x, y, text)
+            Text.drawText(g, x, y, text)
         }
     }
 
@@ -148,9 +147,9 @@ class ExportGuides: CliktCommand(
         for(xIndex in 0 until 16) {
             for(yIndex in 0 until 16) {
                 val codepoint = (prefix shl 8) or if(flip)
-                    xIndex shl 4 or yIndex
-                else
                     yIndex shl 4 or xIndex
+                else
+                    xIndex shl 4 or yIndex
                 val glyph = glyphs.glyphs[codepoint] ?: continue
                 val gridPos = Guides.gridStart + (Guides.gridSize - vec(1, 1)) * vec(xIndex, yIndex)
                 val glyphX = when(glyph.image.width) {
@@ -159,7 +158,8 @@ class ExportGuides: CliktCommand(
                     else -> 0
                 }
                 val glyphY = when(glyph.image.height) {
-                    8, 16 -> 8
+                    8 -> 16
+                    16 -> 8
                     24, 32 -> 0
                     else -> 0
                 }
@@ -176,8 +176,8 @@ class ImportGuides: CliktCommand(
     val image by argument(name = "image", help = "The source image file. Image type is inferred from extension.").file()
     val prefix by option("-p", "--prefix", help = "The codepoint prefix in hex. The input image will be interpreted to " +
             "contain the codepoints from U+xxxx00 to U+xxxxFF. This value will be read from the image's metadata bars " +
-            "if not specified.")
-    val flip by option("-f", "--flip", help = "Flips the glyph order to go top to bottom, then left to right. This value " +
+            "if not specified.").hex()
+    val flip by option("-f", "--flip", help = "Flips the glyph order to go left to right, then top to bottom. This value " +
             "will be read from the image's metadata bars if not specified").nullableFlag("-F", "--unflip")
     val hex by option("-h", "--hex", help = "The output hex file. By default it outputs to a .hex file with the same " +
             "directory and name as the image, except with the .hex extension.").file()
@@ -187,7 +187,8 @@ class ImportGuides: CliktCommand(
     override fun run() {
         val image = ImageIO.read(this.image)
 
-        val prefix = prefix?.toInt(16) ?: readMetadataLine(image, row = 0, bits = 16)
+        // use command line arguments or, if they aren't supplied, read the metadata bars from the image.
+        val prefix = prefix ?: readMetadataLine(image, row = 0, bits = 16)
                 ?: throw PrintMessage("Prefix metadata bar is corrupt. Please specify explicitly with --prefix")
         val flip = flip ?: readMetadataLine(image, row = 1, bits = 1)?.let { it == 1 }
                 ?: throw PrintMessage("Flip metadata bar is corrupt. Please specify explicitly with --flip or --unflip")
@@ -233,9 +234,9 @@ class ImportGuides: CliktCommand(
                 val gridPos = Guides.gridStart + (Guides.gridSize - vec(1, 1)) * vec(xIndex, yIndex)
                 val glyphImage = readGlyph(image, gridPos)
                 val codepoint = (prefix shl 8) or if(flip)
-                    xIndex shl 4 or yIndex
-                else
                     yIndex shl 4 or xIndex
+                else
+                    xIndex shl 4 or yIndex
                 glyphs.glyphs[codepoint] = Glyph(codepoint, glyphImage)
             }
         }

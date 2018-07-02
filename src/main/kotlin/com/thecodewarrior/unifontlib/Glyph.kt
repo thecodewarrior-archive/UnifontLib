@@ -82,12 +82,12 @@ class Glyph(val codepoint: Int, val image: BufferedImage) {
                 4 -> {
                     g.color = Color.BLACK
                     g.fillRect(1, 1, 14, 14)
-                    Images.drawMiniText(g, 2, 1, hexDigits.substring(0, 2))
-                    Images.drawMiniText(g, 2, 8, hexDigits.substring(2, 4))
+                    Text.drawMiniText(g, 2, 1, hexDigits.substring(0, 2))
+                    Text.drawMiniText(g, 2, 8, hexDigits.substring(2, 4))
                 }
                 6 -> {
-                    Images.drawMiniText(g, 0, 1, hexDigits.substring(0, 3))
-                    Images.drawMiniText(g, 0, 8, hexDigits.substring(3, 6))
+                    Text.drawMiniText(g, 0, 1, hexDigits.substring(0, 3))
+                    Text.drawMiniText(g, 0, 8, hexDigits.substring(3, 6))
                 }
                 else -> {
                     drawErrorGlyph(g, 0x0001)
@@ -102,10 +102,10 @@ class Glyph(val codepoint: Int, val image: BufferedImage) {
             val hexDigits = "%04X".format(error)
             g.drawImage(Images["error_base"], 0, 0, null)
 
-            Images.drawMiniChar(g,  1, 1, hexDigits[0])
-            Images.drawMiniChar(g, 10, 1, hexDigits[1])
-            Images.drawMiniChar(g,  1, 8, hexDigits[2])
-            Images.drawMiniChar(g, 10, 8, hexDigits[3])
+            Text.drawMiniChar(g,  1, 1, hexDigits[0])
+            Text.drawMiniChar(g, 10, 1, hexDigits[1])
+            Text.drawMiniChar(g,  1, 8, hexDigits[2])
+            Text.drawMiniChar(g, 10, 8, hexDigits[3])
         }
     }
 }

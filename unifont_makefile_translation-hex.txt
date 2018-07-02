@@ -43,7 +43,7 @@
 ~~ generate glyphs for each codepoint or codepoint range in plane01/unassigned-ranges.txt
 ~~ write to plane01/plane01-unassigned.hex
 ~~ generate glyphs for each codepoint or codepoint range in plane01/noscript-ranges.txt
-~~ write to out/noscript.hex
+~~ write to plane01/noscript.hex
 ~~ write unique glyphs from plane01/*.hex to plane01/all/plane01-all.hex
 ~ end snippet
 ~ load glyphs from plane01/all/plane01-all.hex, plane0E/plane0E-nonprinting.hex, and plane0E/plane0E.hex

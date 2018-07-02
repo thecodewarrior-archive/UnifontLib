@@ -1,10 +1,12 @@
 package com.thecodewarrior.unifontlib.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.thecodewarrior.unifontlib.Images
 import com.thecodewarrior.unifontlib.GlyphList
+import com.thecodewarrior.unifontlib.Text
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.image.BufferedImage
@@ -14,15 +16,15 @@ import javax.imageio.ImageIO
 class ExportBMP: CliktCommand(name="pic") {
 
     //val includeMissing by option("-m", "--missing", help="Generate missing glyphs").file()
-    val inputFile by option("-i", "--input", help="The input .hex file. Default is `unifont.hex`").file()
-    val outputFile by option("-o", "--output", help="The output image. The format is inferred from the extension. " +
+    val inputFile by option("-h", "--hex", help="The input .hex file. Default is `unifont.hex`").file()
+    val outputFile by argument(name="output", help="The output image. The format is inferred from the extension. " +
             "Default is `unifont.png`").file()
 
     val border = 32
     val imageSize = 16*256 + border
     override fun run() {
         val inputFile = inputFile ?: File("unifont.hex")
-        val outputFile = outputFile ?: File("unifont.png")
+        val outputFile = outputFile
 
         val glyphList = GlyphList()
         glyphList.read(inputFile.toPath())
@@ -51,7 +53,7 @@ class ExportBMP: CliktCommand(name="pic") {
 
             val hex = "%02X".format(i)
 
-            Images.drawText(g, x, y-1, hex, tracking = -1)
+            Text.drawText(g, x, y-1, hex, tracking = -1)
             if(i and 0xf == 0xf)
                 g.drawLine(x+15, y-16, x+15, y+14)
             else
@@ -64,7 +66,7 @@ class ExportBMP: CliktCommand(name="pic") {
 
             val hex = "%02X".format(i)
 
-            Images.drawText(g, x-2, y, hex)
+            Text.drawText(g, x-2, y, hex)
             if(i and 0xf == 0xf)
                 g.drawLine(x-16, y+15, x+14, y+15)
             else

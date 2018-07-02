@@ -1,101 +1,192 @@
 <glyphspec>
-	<glyphset>
+	<define var="HEXDIR">plane00</define>
+	#
+	# These are the files for building GNU Unifont with the Qianqian Fang's
+	# Wen Quan Yi CJK ideographs.  This version provides complete coverage
+	# of the Unicode Basic Multilingual Plane.
+	#
+	# If you don't want to include blank glyphs in unassigned code points,
+	# uncomment the UNASSIGNED definition or override from the make command line.
+	#
+	# Likewise, uncomment the PUA definition if you want to use Private
+	# Use Area glyphs.
+	#
+	<define var="UNASSIGNED">plane00/plane00-unassigned.hex</define>
+
+	#
+	# Non-printing glyphs.  There are only about 100 of these, and many end
+	# users do want to print representations of these glyphs, so they are
+	# included as an optional assignment.
+	#
+	<define var="NONPRINTING">plane00/plane00-nonprinting.hex</define>
+
+	# The remaining .hex files will be constant unless a customized font
+	# is being built.  Note that COPYLEFT contains the encoding for U+01F12F,
+	# which is in Unicode Plane 1 rather than Plane 0.  It is included in the
+	# base Plane 0 Unifont TTF font as an exception because of its significance.
+	<define var="UNIFONTBASE">plane00/unifont-base.hex</define>
+	<define var="CJK">plane00/wqy.hex</define>
+	<define var="HANGUL">plane00/hangul-syllables.hex</define>
+	<define var="SPACES">plane00/spaces.hex</define>
+	<define var="CUSTOM00">plane00/custom00.hex</define>
+	<define var="COPYLEFT">plane00/copyleft.hex</define>
+	<define var="UNIFILES">$(UNIFONTBASE) $(CJK) $(HANGUL) $(SPACES) $(UNASSIGNED) $(NONPRINTING) $(CUSTOM00)</define>
+
+	#
+	# Planes 1 through 14 (0x0E) are ordinary;
+	# Planes 15 (0x0F) and 16 (0x10) are Private Use Area
+	#
+	<define var="UPPER_FILES">plane0[1-E]/*.hex</define>
+
+	#
+	# Location of the file containing a list of Unicode combining characters.
+	#
+	<define var="COMBINING">plane00/plane00-combining.txt</define>
+
+	<define var="UPPER_COMBINING">plane0[1-E]/*combining.txt</define>
+
+
+	<hex output="unifont-$VERSION" desc="Unifont BMP glyphs">
 		<collect>
 			<file>plane00/unifont-base.hex</file>
 			<file>plane00/wqy.hex</file>
 			<file>plane00/hangul-syllables.hex</file>
 			<file>plane00/spaces.hex</file>
+			<file>plane00/custom00.hex</file>
 			<file>plane00/plane00-unassigned.hex</file>
 			<file>plane00/plane00-nonprinting.hex</file>
-			<file>plane00/custom00.hex</file>
 		</collect>
-		<output>unifont-$VERSION.hex</output>
-	</glyphset>
+	</hex>
 
-	<glyphset>
+	<hex output="unifont_sample-$VERSION" desc="Unifont BMP glyphs with combining circles and generated glyphs">
 		<collect>
-			<file>plane00/copyleft.hex</file>
-			<file>plane00/hangul-syllables.hex</file>
-			<file>plane00/plane00-unassigned.hex</file>
-			<file>plane00/spaces.hex</file>
-			<file>plane00/wqy.hex</file>
-			<file>plane00/custom00.hex</file>
-			<file>plane00/omit.hex</file>
-			<file>plane00/pua.hex</file>
-			<file>plane00/unifont-base.hex</file>
+			<glob>plane00/*.hex</glob>
 		</collect>
-
-		<addcircles>
-			<file>plane00-combining.txt</file>
-		</addcircles>
-
+		<remove>
+			<codepoint>FFFE</codepoint>
+			<codepoint>FFFF</codepoint>
+			<codepoint>01F12F</codepoint>
+		</remove>
+		<gencircles>
+            <file>plane00/plane00-combining.txt</file>
+		</gencircles>
 		<collect>
 			<file>plane00/plane00-nonprinting.hex</file>
 		</collect>
+	</hex>
 
-		<exclude from="FFFE" to="FFFF"/>
-		<exclude codepoint="01F12F"/>
-		<output>unifont_sample-$VERSION.hex</output>
-	</glyphset>
-
-	<glyphset>
-		<file>plane01/noscript.hex</file>
-		<file>plane01/plane01-nonprinting.hex</file>
-		<file>plane01/plane01-unassigned.hex</file>
-		<file>plane01/plane01.hex</file>
-		<file>plane01/space.hex</file>
-		<file>plane0E/plane0E-nonprinting.hex</file>
-		<file>plane0E/plane0E.hex</file>
-		<output>unifont_upper-$VERSION.hex</output>
-	</glyphset>
-
-	<glyphset>
+	<hex output="unifont_upper-$VERSION" desc="Unifont upper glyphs">
 		<collect>
-			<file>plane01/plane01-combining.txt</file>
-			<file>plane0E/plane0E-combining.txt</file> 
+            <glob>plane0[1-E]/*.hex</glob>
 		</collect>
-		<output>upper_combining.txt</output>
-	</glyphset>
+	</hex>
 
-	<glyphset>
+	<hex output="unifont_upper_sample-$VERSION" desc="Unifont upper glyphs with combining circles (and generated glyphs?)">
 		<collect>
-			plane01-nonprinting.hex
-			plane0E-nonprinting.hex
+			<file>plane01/all/plane01-all.hex</file>
+			<glob>plane02/*.hex</glob>
 		</collect>
-		<output>upper_nonprinting.hex</output>
-	</glyphset>
+		<remove>
+			<regex>..FFFE</regex>
+			<regex>..FFFF</regex>
+		</remove>
+		<gencircles>
+			<glob>plane0[1-E]/*combining.txt</glob>
+		</gencircles>
+		<collect>
+            <glob>plane0[1-E]/plane*-nonprinting.hex</glob>
+		</collect>
+	</hex>
 
-	# Generate files in plane01/all directory to create font sample book.
-	~ run from plane01/Makefile
-	~~ generate glyphs for each codepoint or codepoint range in plane01/unassigned-ranges.txt
-	~~ write to plane01/plane01-unassigned.hex
-	~~ generate glyphs for each codepoint or codepoint range in plane01/noscript-ranges.txt
-	~~ write to out/noscript.hex
-	~~ write unique glyphs from plane01/*.hex to plane01/all/plane01-all.hex
-	~ end snippet
-	~ load glyphs from plane01/all/plane01-all.hex, plane0E/plane0E-nonprinting.hex, and plane0E/plane0E.hex
-	~ remove codepoints ..FFFE and ..FFFF where . is any digit
-	~ generate circles for glyphs in out/upper_combining.txt but not in out/upper_nonprinting.hex
-	~ write glyphs to out/unifont_upper_sample-$(VERSION).hex
+	<define file="upper_combining.txt">
+        <glob>plane0[1-E]/*combining.txt</glob>
+	</define>
+
+	<define file="upper_nonprinting.hex">
+		sort plane0[1-E]/plane*-nonprinting.hex > $(COMPILED_DIR)/upper_nonprinting.hex
+	</define>
+
+	<define file="plane01/plane01-unassigned.hex">
+		- set -e && grep "^[0-9A-Fa-f]" plane01/unassigned-ranges.txt |
+		awk 'NF == 1 {print "../../bin/unihexgen " $$1 " " $$1;} NF == 2 {print "../../bin/unihexgen " $$1 " " $$2;}' |
+		/bin/sh -s > plane01/plane01-unassigned.hex
+	</define>
+
+	<define file="plane01/noscript.hex">
+		grep "^[0-9A-Fa-f]" plane01/noscript-ranges.txt |
+		awk 'NF == 1 {print "../../bin/unihexgen " $$1 " " $$1;}
+		NF == 2 {print "../../bin/unihexgen " $$1 " " $$2;}' |
+		/bin/sh -s > plane01/noscript.hex
+	</define>
+
+	<define file="plane01/all/plane01-all.hex">
+		- sort -u plane01/*.hex > plane01/all/plane01-all.hex
+	</define>
 
 	# Create a .hex file with CSUR glyphs, without combining circles
-	~ write glyphs from out/unifont$(VERSION).hex and plane00csur/*.hex to out/unifont_csur_lower-$(VERSION).hex
-	~ > plane00csur-spaces.hex
-	~ > plane00csur.hex
-	~ > space.hex
+	<define file="$(COMPILED_DIR)/unifont_csur_lower-$(VERSION).hex">
+		sort $(COMPILED_DIR)/unifont-$(VERSION).hex plane00csur/*.hex
+		> $(COMPILED_DIR)/unifont_csur_lower-$(VERSION).hex
+	</define>
 
 	# Create a .hex file with only CSUR glyphs from all planes
-	~ write glyphs from plane00csur/*.hex and plane0F/plane0Fcsur.hex to out/unifont_csur-$(VERSION).hex
-	~ > plane00csur/plane00csur-spaces.hex
-	~ > plane00csur/plane00csur.hex
-	~ > plane00csur/space.hex
+	<define file="$(COMPILED_DIR)/unifont_csur-$(VERSION).hex">
+		sort plane00csur/*.hex | sed -e 's/^/00/' \
+		> $(COMPILED_DIR)/unifont_csur-$(VERSION).hex
+		sort plane0[1-F]csur/*.hex \
+		>> $(COMPILED_DIR)/unifont_csur-$(VERSION).hex
+	</define>
 
 	# Create a .hex file with all CSUR glyphs, with combining circles
-	~ write combined contents of plane00csur/plane00csur-combining.txt and plane0Fcsur/plane0Fcsur-combining.txt to out/csur_combining.txt
+	<define file="$(COMPILED_DIR)/csur_combining.txt">
+		sort plane00csur/plane00csur-combining.txt \
+		>  $(COMPILED_DIR)/csur_combining.txt
+		sort plane0[1-F]csur/plane0[1-F]csur-combining.txt \
+		>> $(COMPILED_DIR)/csur_combining.txt
+	</define>
 
-	~ read out/unifont_csur-$(VERSION).hex
-	~ generate circles for characters in out/csur_combining.txt and not in plane00/plane00-nonprinting.hex
-	~ write to out/unifont_csur_sample-$(VERSION).hex
+	<define file="$(COMPILED_DIR)/unifont_csur_sample-$(VERSION).hex">
+		$(BINDIR)/unigencircles \
+		$(COMPILED_DIR)/csur_combining.txt \
+		plane00/plane00-nonprinting.hex \
+		< $(COMPILED_DIR)/unifont_csur-$(VERSION).hex \
+		> $(COMPILED_DIR)/unifont_csur_sample-$(VERSION).hex
+	</define>
+
+
+unifont-11.0.01/font/plane00/alt/quad-width.hex
+unifont-11.0.01/font/plane00/copyleft.hex
+unifont-11.0.01/font/plane00/custom00.hex
+unifont-11.0.01/font/plane00/hangul-syllables.hex
+unifont-11.0.01/font/plane00/omit.hex
+unifont-11.0.01/font/plane00/plane00-combining.txt
+unifont-11.0.01/font/plane00/plane00-nonprinting.hex
+unifont-11.0.01/font/plane00/plane00-unassigned.hex
+unifont-11.0.01/font/plane00/pua.hex
+unifont-11.0.01/font/plane00/spaces.hex
+unifont-11.0.01/font/plane00/unifont-base.hex
+unifont-11.0.01/font/plane00/wqy.hex
+
+unifont-11.0.01/font/plane00csur/plane00csur-combining.txt
+unifont-11.0.01/font/plane00csur/plane00csur-spaces.hex
+unifont-11.0.01/font/plane00csur/plane00csur.hex
+unifont-11.0.01/font/plane00csur/space.hex
+
+unifont-11.0.01/font/plane01/Makefile
+unifont-11.0.01/font/plane01/noscript-ranges.txt
+unifont-11.0.01/font/plane01/plane01-combining.txt
+unifont-11.0.01/font/plane01/plane01-nonprinting.hex
+unifont-11.0.01/font/plane01/plane01.hex
+unifont-11.0.01/font/plane01/space.hex
+unifont-11.0.01/font/plane01/unassigned-ranges.txt
+
+unifont-11.0.01/font/plane0E/plane0E-combining.txt
+unifont-11.0.01/font/plane0E/plane0E-nonprinting.hex
+unifont-11.0.01/font/plane0E/plane0E.hex
+
+unifont-11.0.01/font/plane0Fcsur/plane0Fcsur-combining.txt
+unifont-11.0.01/font/plane0Fcsur/plane0Fcsur.hex
 
 
 </glyphspec>
+

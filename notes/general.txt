@@ -1,0 +1,56 @@
+*-combining.txt
+
+    codepoint:offset
+
+    the offset seems to be the size of character it overlays on top of. with -8, moving it back 8px will center the circle
+    over a single-width character, with -16, moving it back 16 will center the circle over a double-width character.
+
+    if character is single-width:
+        draw circle in left half
+
+    if character is double-width:
+        if offset >= -8:
+            draw circle in left half
+        if offset < -8:
+            draw circle in center
+
+    the offset is the number of pixels left to shift the glyph when creating the ttf. Combining characters also have a width of 0
+
+
+TODO:
+hex2sfd        |
+hexdraw        |
+hexmerge       |
+unibdf2hex     |
+unicoverage    |
+unifont-viewer |
+unifontchojung |
+unigenwidth    |
+unihexgen      |
+hex2bdf        |
+hexbraille     |
+hexkinya       |
+johab2ucs2     |
+unidup         |
+unifont1per    |
+unifontksx     |
+unigencircles  |
+unihexfill     |
+unipagecount   |
+
+unifontpic     | pic
+unihex2png     | guides export
+unipng2hex     | guides import
+unibmp2hex     | guides import
+unihex2bmp     | guides export
+
+
+-i --input | input file
+-o --output | output file
+
+input, output
+
+unifont pic theimage.png -P plane
+unifont export guide -p
+unifont import
+unifont ranges from-hex

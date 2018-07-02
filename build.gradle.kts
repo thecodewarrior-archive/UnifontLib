@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.FileOutputStream
 
 buildscript {
     var kotlin_version: String by extra
@@ -43,9 +44,37 @@ dependencies {
     testCompile("junit", "junit", "4.12")
 }
 
+val fatJar = task("fatJar", type = Jar::class) {
+    baseName="${project.name}-fat"
+    manifest {
+        attributes["Main-Class"] = "com.thecodewarrior.unifontlib.commands.MainKt"
+    }
+    from(configurations.runtime.map({ if(it.isDirectory) it else zipTree(it) }))
+    with(tasks["jar"] as CopySpec)
+}
+
+val createExecutable = task("createExecutable") {
+    dependsOn(fatJar)
+    val input = fatJar.outputs.files.singleFile
+    val output = project.buildDir.resolve("libs/${project.name}-${project.version}")
+    doLast {
+        FileOutputStream(output).use { outputStream ->
+            exec {
+                standardOutput = outputStream
+                commandLine("cat", "src/launcher-stub.sh", input.absolutePath)
+            }
+        }
+        exec {
+            commandLine("chmod", "+x", output.absolutePath)
+        }
+    }
+}
+
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_1_8
 }
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
+
+tasks["build"].dependsOn(createExecutable)
